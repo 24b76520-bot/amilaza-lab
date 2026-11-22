@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="ru"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Виртуальная лаборатория: амилаза слюны</title>
+<style>
+:root{--bg:#f8fafc;--fg:#0f172a;--card:#fff;--bd:#cbd5e1;--ac:#0d9488;--mut:#475569;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f172a;--fg:#f1f5f9;--card:#1e293b;--bd:#475569;--ac:#2dd4bf;--mut:#94a3b8}}
+:root[data-theme="dark"]{--bg:#0f172a;--fg:#f1f5f9;--card:#1e293b;--bd:#475569;--ac:#2dd4bf;--mut:#94a3b8}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.45 system-ui,-apple-system,"Segoe UI",sans-serif}
+main{max-width:760px;margin:0 auto;padding:14px}
+h1{font-size:20px;margin:0 0 4px}h2{font-size:16px;margin:10px 0 6px}
+.mut{color:var(--mut);font-size:14px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin:12px 0}
+.racks{display:flex;gap:10px;flex-wrap:wrap}.rack{flex:1;min-width:250px}
+.tubes{display:flex;justify-content:space-around;align-items:flex-end;border-bottom:6px solid var(--bd);padding-bottom:2px}
+.t{text-align:center;width:33%;font-size:12px}
+.glass{width:40px;height:120px;margin:0 auto;border:2px solid var(--bd);border-top:none;border-radius:0 0 22px 22px;position:relative;overflow:hidden}
+.liq{position:absolute;bottom:0;left:0;right:0;transition:all .6s}
+.b{font-size:11px;color:var(--mut);min-height:16px}
+button{font:inherit;background:var(--ac);color:var(--bg);border:0;border-radius:10px;padding:10px 14px;cursor:pointer;width:100%;margin-top:8px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.o{background:none;color:var(--fg);border:1px solid var(--bd)}
+ol{padding-left:20px;margin:0}li.d{color:var(--mut);text-decoration:line-through}li.c{font-weight:600}
+select,textarea,input{font:inherit;width:100%;padding:6px;background:var(--bg);color:var(--fg);border:1px solid var(--bd);border-radius:8px;margin-top:4px}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center;margin:4px 0}.row select{margin:0}
+.chips{display:flex;gap:4px;flex-wrap:wrap;margin:8px 0 0}
+.ch{font-size:12px;padding:3px 8px;border:1px solid var(--bd);border-radius:99px;color:var(--mut)}
+.ch.d{background:var(--ac);color:var(--bg);border-color:var(--ac)}.ch.c{border-color:var(--ac);color:var(--fg);font-weight:600}
+.sc{display:flex;justify-content:space-between;font-size:14px;margin-top:8px;flex-wrap:wrap;gap:4px}
+.w{overflow-x:auto}table{border-collapse:collapse;width:100%;min-width:480px;font-size:13px}
+td,th{border:1px solid var(--bd);padding:5px;text-align:center}
+details{margin-top:12px}
+</style></head><body><main>
+<h1>Лабораторная работа №2</h1>
+<div class="mut">Влияние температуры и pH на активность амилазы слюны. Результаты модельные: в реальном опыте оттенки могут отличаться.</div>
+<div class="card"><div class="racks">
+<div class="rack"><h2>Штатив 1: влияние pH</h2><div class="tubes" id="r1"></div></div>
+<div class="rack"><h2>Штатив 2: влияние температуры</h2><div class="tubes" id="r2"></div></div>
+</div></div>
+<div class="card"><div class="chips" id="ch"></div><div class="sc" id="sc"></div></div>
+<div class="card" id="pn"></div>
+</main>
+<script>
+const $=i=>document.getElementById(i),E=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const T=[{r:1,n:"№1 кислота",a:"acid",k:"blue",e:"Кислая среда нарушает работу амилазы: крахмал остался, йод даёт синий цвет."},
+{r:1,n:"№2 сода",a:"soda",k:"mid",e:"В щелочной среде фермент работает хуже: крахмал расщеплён частично."},
+{r:1,n:"№3 контроль",a:"none",k:"yel",e:"Условия близки к оптимальным: крахмал расщеплён, синий цвет не появляется."},
+{r:2,n:"№1 лёд",c:"0–4 °C",k:"blue",e:"Холод замедляет реакцию, но фермент цел: при нагревании он снова работает."},
+{r:2,n:"№2 55–60 °C",c:"55–60 °C",k:"blue",e:"Сильный нагрев вызывает денатурацию белка-фермента, активность теряется."},
+{r:2,n:"№3 36–38 °C",c:"37 °C",k:"yel",e:"Температура близка к оптимальной: крахмал расщеплён."}];
+const COL={blue:"#1e1b4b",mid:"#6d28d9",yel:"#e0a526"},NM={blue:"синий",mid:"фиолетовый",yel:"жёлтый"};
+const ST=["Гипотеза","Эксперимент","Наблюдения","Анализ","Вывод","Итог"];
+const STEPS=["Налить по 2–3 мл воды в 6 пробирок","Штатив 1: №1 — лимонная кислота, №2 — сода, №3 — без добавок","Во все пробирки добавить 2 мл крахмала и 2–3 мл слюны","Выдержать 5 мин: штатив 1 — при 37 °C; штатив 2 — лёд, 55–60 °C, 37 °C","Добавить йод и перемешать"];
+const HINTS=["Все 6 пробирок готовятся одинаково.","Контрольная пробирка остаётся без добавок: она нужна для сравнения.","Крахмала и слюны во всех пробирках поровну.","В каждой серии меняется одно условие: pH в штативе 1, температура в штативе 2.","Йод добавляют последним: он выявляет крахмал."];
+const AQ=["Почему необходима контрольная пробирка?","Почему в пробирках могут появляться разные цвета после добавления йода?","Чем отличается влияние низкой температуры от влияния высокой температуры?","Как изменение pH может влиять на активность фермента?"];
+const QS=[{q:"Какую молекулу расщепляет амилаза слюны?",o:["белок","крахмал","жир","ДНК"],a:1},
+{q:"Какой цвет йода указывает на нерасщеплённый крахмал?",o:["жёлтый","синий/сине-фиолетовый","прозрачный","красный"],a:1},
+{q:"Почему низкая температура замедляет действие амилазы?",o:["молекулы движутся медленнее, реакция замедляется","фермент превращается в крахмал","фермент исчезает","йод не действует"],a:0},
+{q:"Что может произойти с амилазой при сильном нагревании?",o:["активность неограниченно возрастает","денатурация","превращение в сахар","синтез крахмала"],a:1},
+{q:"Зачем используют контрольную пробирку?",o:["для сравнения с пробами, где изменены условия","чтобы добавить больше йода","для окрашивания","чтобы исключить фермент"],a:0}];
+let S={g:0,name:"",h:{},s:0,hints:0,hs:0,ob:{},chk:0,an:["","","",""],tq:{},tchk:0,cl:""};
+const opt=v=>`<option value="">— выберите —</option>`+Object.keys(NM).map(k=>`<option value="${k}" ${v==k?"selected":""}>${NM[k]}</option>`).join("");
+const hn=()=>Object.values(S.h).filter(Boolean).length;
+const hs=()=>S.g<1?0:hn()>=4?2:hn()>=1?1:0;
+const ls=()=>S.s>=5?(S.hints?1:2):0;
+const oerr=()=>T.filter((t,i)=>S.ob[i]!=t.k).length;
+const os=()=>!S.chk?0:oerr()==0?2:oerr()<=2?1:0;
+const tc=()=>QS.filter((q,i)=>S.tq[i]===q.a).length;
+const ts=()=>!S.tchk?0:tc()==5?2:tc()>=3?1:0;
+const tot=()=>hs()+ls()+os()+ts();
+const P=()=>({n:S.name.trim(),h:hs(),l:ls(),o:os(),t:ts(),k:S.hints,m:T.filter((t,i)=>S.h[i]==t.k).length,c:S.cl.trim(),a:S.an});
+const code=()=>"AML1."+btoa(unescape(encodeURIComponent(JSON.stringify(P()))));
+const sel=(k,v,ph)=>T.map((t,i)=>`<div class="row"><span>Ш${t.r} ${t.n}</span><select ${S.chk&&k=="ob"?"disabled":""} onchange="S.${k}[${i}]=this.value;gate()">${opt(v[i])}</select></div>`).join("");
+const PN=[
+()=>`<h2>1. Гипотеза</h2><p class="mut">До эксперимента спрогнозируйте цвет с йодом в каждой из 6 пробирок. Оценивается обоснованный прогноз, а не совпадение с результатом.</p><input placeholder="Фамилия, имя" value="${E(S.name)}" oninput="S.name=this.value;gate()">`+sel("h",S.h)+`<button id="nx" onclick="nx()">Начать эксперимент</button>`,
+()=>`<h2>2. Виртуальный эксперимент</h2><ol>${STEPS.map((x,i)=>`<li class="${i<S.s?"d":i==S.s?"c":""}">${x}</li>`).join("")}</ol>`+(S.s<5?`<button onclick="S.s++;S.hs=0;r()">Выполнить шаг ${S.s+1}</button><button class="o" onclick="hint()">💡 Подсказка (снижает балл)</button><div class="mut" id="hn"></div>`:`<button id="nx" onclick="nx()">К наблюдениям</button>`),
+()=>S.chk?`<h2>3. Проверка</h2><div class="w"><table><tr><th>Пробирка</th><th>Гипотеза</th><th>Наблюдение</th><th>Модельный результат</th></tr>${T.map((t,i)=>`<tr><td>Ш${t.r} ${t.n}</td><td>${NM[S.h[i]]} ${S.h[i]==t.k?"✓":"✗"}</td><td>${NM[S.ob[i]]} ${S.ob[i]==t.k?"✓":"✗"}</td><td>${NM[t.k]}</td></tr>`).join("")}</table></div><p>Гипотез совпало: ${P().m} из 6. Ошибок в наблюдениях: ${oerr()}.</p><div class="mut">${T.map(t=>`<p><b>${t.n}.</b> ${t.e}</p>`).join("")}</div><button id="nx" onclick="nx()">К анализу</button>`:`<h2>3. Наблюдения</h2><p class="mut">Запишите цвет в каждой пробирке после добавления йода.</p>`+sel("ob",S.ob)+`<button id="ck" onclick="S.chk=1;r()">Проверить гипотезы и наблюдения</button>`,
+()=>`<h2>4. Анализ</h2>`+AQ.map((q,i)=>`<p>${i+1}. ${q}<textarea rows="2" oninput="S.an[${i}]=this.value;gate()">${E(S.an[i])}</textarea></p>`).join("")+`<h2>Мини-тест</h2>`+QS.map((q,i)=>`<p>${i+1}. ${q.q}<select ${S.tchk?"disabled":""} onchange="S.tq[${i}]=this.value===''?undefined:+this.value;gate()"><option value="">—</option>${q.o.map((o,j)=>`<option value="${j}" ${S.tq[i]===j?"selected":""}>${o}</option>`).join("")}</select>${S.tchk?(S.tq[i]===q.a?" ✓":" ✗ верно: "+q.o[q.a]):""}</p>`).join("")+(S.tchk?`<p>Верно: ${tc()} из 5.</p>`:`<button id="tk" class="o" onclick="S.tchk=1;r()">Проверить тест</button>`)+`<button id="nx" onclick="nx()">К выводу</button>`,
+()=>`<h2>5. Вывод</h2><p class="mut">Напишите вывод по формуле «Если…, то…, потому что…» о влиянии одного или двух факторов.</p><textarea id="cl" rows="4" oninput="S.cl=this.value;gate()">${E(S.cl)}</textarea><button class="o" onclick="$('cl').value=S.cl='Если …, то …, потому что …';gate()">Вставить шаблон</button><button id="nx" onclick="nx()">Завершить</button>`,
+()=>{const p=P();return `<h2>Итог: ${E(p.n)}</h2><div class="w"><table><tr><th>Критерий</th><th>Балл</th></tr><tr><td>1. Гипотеза</td><td>${p.h}/2</td></tr><tr><td>2. Лаборатория (подсказок: ${p.k})</td><td>${p.l}/2</td></tr><tr><td>3. Наблюдения</td><td>${p.o}/2</td></tr><tr><td>4. Мини-тест</td><td>${p.t}/2</td></tr><tr><td>5. Вывод</td><td>проверит учитель (0–2)</td></tr><tr><th>Автоматически</th><th>${tot()}/8</th></tr></table></div><p class="mut">Вывод: ${E(p.c)}</p><button onclick="dl()">Скачать мой результат</button><button class="o" onclick="cp(code())">Скопировать код результата</button><textarea readonly rows="3" onclick="this.select()">${code()}</textarea><div class="mut" id="msg"></div><button class="o" onclick="location.reload()">Начать заново</button>`}];
+const GT=[()=>S.name.trim()&&hn()==6,()=>S.s>=5,()=>S.chk,()=>S.tchk&&S.an.every(x=>x.trim()),()=>S.cl.trim().length>=40&&!S.cl.includes("…")];
+function gate(){const n=$("nx");if(n&&GT[S.g])n.disabled=!GT[S.g]();const c=$("ck");if(c)c.disabled=Object.values(S.ob).filter(Boolean).length<6;const k=$("tk");if(k)k.disabled=Object.values(S.tq).filter(x=>x!==undefined).length<5;sc()}
+function sc(){$("sc").innerHTML=`<span>Баллы: <b>${tot()}</b> из 8 (+ вывод до 2)</span><span class="mut">Подсказок: ${S.hints}</span>`}
+function nx(){S.g++;r()}
+function hint(){if(!S.hs){S.hs=1;S.hints++}$("hn").textContent=HINTS[S.s];sc()}
+async function cp(t){try{await navigator.clipboard.writeText(t);$("msg").textContent="Скопировано."}catch(e){$("msg").textContent="Выделите код в поле выше и скопируйте вручную."}}
+async function dl(){const p=P(),t=`Лабораторная работа №2. Амилаза слюны\nУченик: ${p.n}\nГипотеза: ${p.h}/2\nЛаборатория: ${p.l}/2 (подсказок: ${p.k})\nНаблюдения: ${p.o}/2\nМини-тест: ${p.t}/2\nАвтоматически: ${tot()}/8\nСовпало гипотез: ${p.m}/6\n\nОтветы на вопросы анализа:\n${p.a.map((x,i)=>(i+1)+". "+x).join("\n")}\n\nВывод (проверяет учитель, 0–2):\n${p.c}\n\nКод результата:\n${code()}\n`;
+const f="amilaza_"+(p.n.replace(/\s+/g,"_")||"result")+".txt";try{const d=window.claude&&await claude.use("downloads");if(d){await d.save({filename:f,data:t});return}}catch(e){}try{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([t],{type:"text/plain;charset=utf-8"}));a.download=f;document.body.appendChild(a);a.click();a.remove()}catch(e){cp(t)}}
+function teach(){const rows=$("tc").value.split("\n").map(x=>x.trim()).filter(Boolean).map(x=>{try{return JSON.parse(decodeURIComponent(escape(atob(x.replace("AML1.","")))))}catch(e){return null}});
+$("tt").innerHTML=`<table><tr><th>Ученик</th><th>Гип.</th><th>Лаб.</th><th>Набл.</th><th>Тест</th><th>Авто /8</th><th>Вывод</th><th>Балл</th><th>Итого /10</th></tr>`+rows.map((p,i)=>p?`<tr><td>${E(p.n)}</td><td>${p.h}</td><td>${p.l}</td><td>${p.o}</td><td>${p.t}</td><td>${p.h+p.l+p.o+p.t}</td><td style="text-align:left;min-width:160px">${E(p.c)}</td><td><select style="width:52px" onchange="$('s${i}').textContent=${p.h+p.l+p.o+p.t}+(+this.value)"><option>0</option><option>1</option><option>2</option></select></td><td id="s${i}">${p.h+p.l+p.o+p.t}</td></tr>`:`<tr><td colspan="9">Код ${i+1} не распознан</td></tr>`).join("")+`</table>`}
+function r(){["r1","r2"].forEach(i=>$(i).innerHTML="");
+T.forEach((t,i)=>{let h=0,c="#bfdbfe",s=S.s;if(s>=1)h=28;if(s>=2&&t.a=="acid")c="#fde68a";if(s>=2&&t.a=="soda")c="#bae6fd";if(s>=3){h=62;c="#f1f5f9"}if(s>=5){h=66;c=COL[t.k]}
+$("r"+t.r).insertAdjacentHTML("beforeend",`<div class="t"><div class="glass"><div class="liq" style="height:${h}%;background:${c}"></div></div><div class="b">${s>=4?(t.c||"37 °C"):""}</div>${t.n}</div>`)});
+$("ch").innerHTML=ST.map((x,i)=>`<span class="ch ${i<S.g?"d":i==S.g?"c":""}">${i<S.g?"✓ ":""}${x}</span>`).join("");
+$("pn").innerHTML=PN[S.g]();gate()}
+r();
+</script></body></html>
